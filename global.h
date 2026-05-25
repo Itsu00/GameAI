@@ -24,9 +24,9 @@ struct Rect {
 enum DIR
 {
 	UP,
+	RIGHT,
 	DOWN,
 	LEFT,
-	RIGHT,
 	NONE,//•ûŒü‚È‚µiÎ‚ßj
 	MAX_DIR
 };

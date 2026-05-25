@@ -6,7 +6,7 @@
 namespace
 {
 	const int ENEMY_SIZE = 48; //敵のサイズ 32*32
-	const Point ENEMY_START_POS = { 20 * ENEMY_SIZE, 10 * ENEMY_SIZE }; //敵の初期位置
+	const Point ENEMY_START_POS = { 0.68 * ENEMY_SIZE, 0.68 * ENEMY_SIZE }; //敵の初期位置
 	const DIR INIT_ENEMY_DIR = { LEFT };
 	const int ENEMY_DRAW_SIZE = 32; //敵の描画サイズ
 	const int animFrame[4]{ 0, 1, 2, 1 };
@@ -27,45 +27,54 @@ Enemy::~Enemy()
 
 void Enemy::Update()
 {
-	//GetRand(数値)
-	//3秒に1回向きをランダムに変える
 	static float dir_timer = 3.0f;
 	static float prog_timer = 0.5f;
 	float dt = Time::DeltaTime();
 	dir_timer = dir_timer - dt;
 	prog_timer = prog_timer - dt;
-	if (dir_timer < 0.0f)
-	{
+
+	/*if (dir_timer < 0.0f) {
 		dir_ = (DIR)(GetRand(3));
 		dir_timer = 3.0f + dir_timer;
-	}
+	}*/
 
-	Point newPos = pos_;
 	if (prog_timer < 0.0f)
 	{
-		switch (dir_)
-		{
-		case UP:
-			newPos.y -= ENEMY_DRAW_SIZE;
-			break;
-		case DOWN:
-			newPos.y += ENEMY_DRAW_SIZE;
-			break;
-		case LEFT:
-			newPos.x -= ENEMY_DRAW_SIZE;
-			break;
-		case RIGHT:
-			newPos.x += ENEMY_DRAW_SIZE;
-			break;
-		default:
-			break;
-		}
-		int mapValue = FindGameObject<Stage>()->GetMap(newPos.x / CHA_SIZE, newPos.y / CHA_SIZE);
-		//Stage* stage = FindGameObject<Stage>();
-		//移動先がステージの外に出ないようにする
-		if (mapValue != 1)
-		{
-			pos_ = newPos;
+		DIR dirs[4];
+		dirs[0] = (DIR)((dir_ + 3) % 4);
+		dirs[1] = dir_;
+		dirs[2] = (DIR)((dir_ + 1) % 4);
+		dirs[3] = (DIR)((dir_ + 2) % 4);
+
+		for (int i = 0; i < 4; i++) {
+			Point newPos = pos_;
+			switch (dirs[i])
+			{
+			case UP:
+				newPos.y -= ENEMY_DRAW_SIZE;
+				break;
+			case DOWN:
+				newPos.y += ENEMY_DRAW_SIZE;
+				break;
+			case LEFT:
+				newPos.x -= ENEMY_DRAW_SIZE;
+				break;
+			case RIGHT:
+				newPos.x += ENEMY_DRAW_SIZE;
+				break;
+			default:
+				break;
+			}
+
+			int mapValue = FindGameObject<Stage>()->GetMap(newPos.x / CHA_SIZE, newPos.y / CHA_SIZE);
+			//Stage* stage = FindGameObject<Stage>();
+			//移動先がステージの外に出ないようにする
+			if (mapValue != 1)
+			{
+				dir_ = dirs[i];
+				pos_ = newPos;
+				break;
+			}
 		}
 		prog_timer = 0.5f + prog_timer;
 	}
@@ -73,6 +82,7 @@ void Enemy::Update()
 //プレイヤーも壁から外に出ないようにする
 //パンダを壁沿いにぐるぐる回るようにする
 //元の移動処理はコメントにしておく
+
 void Enemy::Draw()
 {
 	static float animTimer = ANIM_INTERVAL;
