@@ -6,7 +6,7 @@
 namespace
 {
 	const int ENEMY_SIZE = 48; //敵のサイズ 32*32
-	const Point ENEMY_START_POS = { 0.68 * ENEMY_SIZE, 0.68 * ENEMY_SIZE }; //敵の初期位置
+	const Point ENEMY_START_POS = { 24.68 * ENEMY_SIZE, 12.68 * ENEMY_SIZE }; //敵の初期位置
 	const DIR INIT_ENEMY_DIR = { LEFT };
 	const int ENEMY_DRAW_SIZE = 32; //敵の描画サイズ
 	const int animFrame[4]{ 0, 1, 2, 1 };
