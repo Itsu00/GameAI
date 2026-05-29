@@ -1,6 +1,7 @@
 #include "Player.h"
 #include "global.h"
 #include "Input.h"
+#include "Stage.h"
 
 namespace
 {
@@ -25,25 +26,31 @@ Player::~Player()
 
 void Player::Update()
 {
+	Point newPos = pos_;
 	if (Input::IsKeyDown(KEY_INPUT_UP))
 	{
 		dir_ = UP;
-		pos_.y -= PLAYER_DRAW_SIZE;
+		newPos.y -= PLAYER_DRAW_SIZE;
 	}
 	else if (Input::IsKeyDown(KEY_INPUT_DOWN))
 	{
 		dir_ = DOWN;
-		pos_.y += PLAYER_DRAW_SIZE;
+		newPos.y += PLAYER_DRAW_SIZE;
 	}
 	else if (Input::IsKeyDown(KEY_INPUT_LEFT))
 	{
 		dir_ = LEFT;
-		pos_.x -= PLAYER_DRAW_SIZE;
+		newPos.x -= PLAYER_DRAW_SIZE;
 	}
 	else if (Input::IsKeyDown(KEY_INPUT_RIGHT))
 	{
 		dir_ = RIGHT;
-		pos_.x += PLAYER_DRAW_SIZE;
+		newPos.x += PLAYER_DRAW_SIZE;
+	}
+
+	int mapValue = FindGameObject<Stage>()->GetMap(newPos.x / CHA_SIZE, newPos.y / CHA_SIZE);
+	if (mapValue != 1) {
+		pos_ = newPos;
 	}
 }
 

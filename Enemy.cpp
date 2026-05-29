@@ -2,6 +2,7 @@
 #include "time.h"
 #include "Library/ObjectManager.h"
 #include "Stage.h"
+#include "Player.h"
 
 namespace
 {
@@ -11,6 +12,7 @@ namespace
 	const int ENEMY_DRAW_SIZE = 32; //敵の描画サイズ
 	const int animFrame[4]{ 0, 1, 2, 1 };
 	const float ANIM_INTERVAL = 0.2f;
+	const float CHASE_RANGE = 5.0f * CHA_SIZE;//追いかけ距離
 }
 
 Enemy::Enemy()
@@ -27,6 +29,9 @@ Enemy::~Enemy()
 
 void Enemy::Update()
 {
+	// prog_timerの外、一番上に追加
+	printfDx("pos_.x:%d  pos_.y:%d\n", pos_.x, pos_.y);
+
 	static float dir_timer = 3.0f;
 	static float prog_timer = 0.5f;
 	float dt = Time::DeltaTime();
@@ -40,40 +45,30 @@ void Enemy::Update()
 
 	if (prog_timer < 0.0f)
 	{
-		DIR dirs[4];
-		dirs[0] = (DIR)((dir_ + 3) % 4);
-		dirs[1] = dir_;
-		dirs[2] = (DIR)((dir_ + 1) % 4);
-		dirs[3] = (DIR)((dir_ + 2) % 4);
+		GameObject* playerObj = FindGameObject<Player>();
 
-		for (int i = 0; i < 4; i++) {
-			Point newPos = pos_;
-			switch (dirs[i])
-			{
-			case UP:
-				newPos.y -= ENEMY_DRAW_SIZE;
-				break;
-			case DOWN:
-				newPos.y += ENEMY_DRAW_SIZE;
-				break;
-			case LEFT:
-				newPos.x -= ENEMY_DRAW_SIZE;
-				break;
-			case RIGHT:
-				newPos.x += ENEMY_DRAW_SIZE;
-				break;
-			default:
-				break;
+		if (playerObj != nullptr) {
+			Player* player = dynamic_cast<Player*>(playerObj);
+			Point playerPos = player->GetPlayerPos();
+
+			float dx = playerPos.x - pos_.x;
+			float dy = playerPos.y - pos_.y;
+			float dist = sqrtf(dx * dx + dy * dy);
+
+			if (dist < CHASE_RANGE) {
+				if (!isChasing_) {
+					wallDir_ = dir_;//巡回中の方向を保存
+					isChasing_ = true;
+				}
+				ChasePlayer(playerPos);//追いかけ
 			}
-
-			int mapValue = FindGameObject<Stage>()->GetMap(newPos.x / CHA_SIZE, newPos.y / CHA_SIZE);
-			//Stage* stage = FindGameObject<Stage>();
-			//移動先がステージの外に出ないようにする
-			if (mapValue != 1)
-			{
-				dir_ = dirs[i];
-				pos_ = newPos;
-				break;
+			else {
+				if (isChasing_) {//巡回に戻るときに方向を復元
+					dir_ = wallDir_;//保存しておいた方向を戻す
+					isChasing_ = false;
+					ReturnToWall();
+				}
+				WallFollow();//通常
 			}
 		}
 		prog_timer = 0.5f + prog_timer;
@@ -104,4 +99,97 @@ void Enemy::Draw()
 		animTimer = ANIM_INTERVAL + animTimer;
 	}
 	animTimer = animTimer - Time::DeltaTime();
+}
+
+void Enemy::ChasePlayer(Point playerPos)
+{
+	DIR dirs[4];
+	float dx = playerPos.x - pos_.x;
+	float dy = playerPos.y - pos_.y;
+
+	if (abs(dx) > abs(dy)) {
+		dirs[0] = (dx > 0) ? RIGHT : LEFT;
+		dirs[1] = (dy > 0) ? DOWN : UP;
+		dirs[2] = (dy > 0) ? UP : DOWN;
+		dirs[3] = (dx > 0) ? LEFT : RIGHT;
+	}
+	else {
+		dirs[0] = (dy > 0) ? DOWN : UP;
+		dirs[1] = (dx > 0) ? RIGHT : LEFT;
+		dirs[2] = (dx > 0) ? LEFT : RIGHT;
+		dirs[3] = (dy > 0) ? UP : DOWN;
+	}
+	TryMove(dirs);
+}
+
+void Enemy::WallFollow()
+{
+	DIR dirs[4];
+	dirs[0] = (DIR)((dir_ + 3) % 4);
+	dirs[1] = dir_;
+	dirs[2] = (DIR)((dir_ + 1) % 4);
+	dirs[3] = (DIR)((dir_ + 2) % 4);
+
+	TryMove(dirs);
+}
+
+void Enemy::TryMove(DIR dirs[4])
+{
+	for (int i = 0; i < 4; i++) {
+		Point newPos = pos_;
+		switch (dirs[i])
+		{
+		case UP:
+			newPos.y -= ENEMY_DRAW_SIZE;
+			break;
+		case DOWN:
+			newPos.y += ENEMY_DRAW_SIZE;
+			break;
+		case LEFT:
+			newPos.x -= ENEMY_DRAW_SIZE;
+			break;
+		case RIGHT:
+			newPos.x += ENEMY_DRAW_SIZE;
+			break;
+		default:
+			break;
+		}
+
+		int mapValue = FindGameObject<Stage>()->GetMap(newPos.x / CHA_SIZE, newPos.y / CHA_SIZE);
+		//Stage* stage = FindGameObject<Stage>();
+		//移動先がステージの外に出ないようにする
+		if (mapValue != 1)
+		{
+			dir_ = dirs[i];
+			pos_ = newPos;
+			break;
+		}
+	}
+}
+
+void Enemy::ReturnToWall()
+{
+	DIR dirs[4] = { UP,DOWN,LEFT,RIGHT };
+	for (int i = 0;i < 4;i++) {
+		Point checkPos = pos_;
+		switch (dirs[i]) {
+		case UP: checkPos.y -= ENEMY_DRAW_SIZE; break;
+		case DOWN: checkPos.y += ENEMY_DRAW_SIZE; break;
+		case LEFT: checkPos.x -= ENEMY_DRAW_SIZE; break;
+		case RIGHT: checkPos.x += ENEMY_DRAW_SIZE; break;
+		}
+
+		int mapValue = FindGameObject<Stage>()->GetMap(checkPos.x / CHA_SIZE, checkPos.y / CHA_SIZE);
+
+		printfDx("dir:%d checkPos:%d,%d mapValue:%d\n", dirs[i], checkPos.x / CHA_SIZE, checkPos.y / CHA_SIZE, mapValue);
+
+		if (mapValue == 1)
+		{
+			dir_ = (DIR)((dirs[i] + 2) % 4);
+			printfDx("壁発見！新しいdir_:%d\n", dir_);
+			return;
+		}
+	}
+	dir_ = wallDir_;//周囲に壁がない場合はwallDirに戻す
+	printfDx("壁なし！wallDir_に戻す:%d\n", wallDir_);
 }
