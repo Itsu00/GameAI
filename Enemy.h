@@ -13,12 +13,4 @@ public:
 	~Enemy();
 	void Update() override;
 	void Draw() override;
-
-	void ChasePlayer(Point playerPos);
-	void WallFollow();
-	void TryMove(DIR dirs[4]);
-	void ReturnToWall();
-private:
-	bool isChasing_ = false;//’Ç‚¢‚©‚¯’†‚©
-	DIR wallDir_;//„‰ñ—p‚Ì•ûŒü‚ğ•Ê‚É•Û
 };
