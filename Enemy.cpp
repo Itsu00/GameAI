@@ -29,9 +29,6 @@ Enemy::~Enemy()
 
 void Enemy::Update()
 {
-	// prog_timerの外、一番上に追加
-	printfDx("pos_.x:%d  pos_.y:%d\n", pos_.x, pos_.y);
-
 	static float dir_timer = 3.0f;
 	static float prog_timer = 0.5f;
 	float dt = Time::DeltaTime();
@@ -59,6 +56,7 @@ void Enemy::Update()
 				if (!isChasing_) {
 					wallDir_ = dir_;//巡回中の方向を保存
 					isChasing_ = true;
+					printfDx("追跡開始！保存したwallDir_:%d\n", wallDir_); // ←追加
 				}
 				ChasePlayer(playerPos);//追いかけ
 			}
@@ -169,23 +167,20 @@ void Enemy::TryMove(DIR dirs[4])
 
 void Enemy::ReturnToWall()
 {
-	DIR dirs[4] = { UP,DOWN,LEFT,RIGHT };
+	DIR tryDirs[4] = { UP,DOWN,LEFT,RIGHT };
 	for (int i = 0;i < 4;i++) {
-		Point checkPos = pos_;
-		switch (dirs[i]) {
-		case UP: checkPos.y -= ENEMY_DRAW_SIZE; break;
-		case DOWN: checkPos.y += ENEMY_DRAW_SIZE; break;
-		case LEFT: checkPos.x -= ENEMY_DRAW_SIZE; break;
-		case RIGHT: checkPos.x += ENEMY_DRAW_SIZE; break;
+		DIR d = tryDirs[i];
+		DIR leftDir = (DIR)((d + 3) % 4);
+		Point leftPos = pos_;
+		switch (leftDir) {
+		case UP:	leftPos.y -= ENEMY_DRAW_SIZE; break;
+		case DOWN:	leftPos.y += ENEMY_DRAW_SIZE; break;
+		case LEFT:	leftPos.x -= ENEMY_DRAW_SIZE; break;
+		case RIGHT: leftPos.x += ENEMY_DRAW_SIZE; break;
 		}
-
-		int mapValue = FindGameObject<Stage>()->GetMap(checkPos.x / CHA_SIZE, checkPos.y / CHA_SIZE);
-
-		printfDx("dir:%d checkPos:%d,%d mapValue:%d\n", dirs[i], checkPos.x / CHA_SIZE, checkPos.y / CHA_SIZE, mapValue);
-
-		if (mapValue == 1)
-		{
-			dir_ = (DIR)((dirs[i] + 2) % 4);
+		int mapValue = FindGameObject<Stage>()->GetMap(leftPos.x / CHA_SIZE, leftPos.y / CHA_SIZE);
+		if (mapValue == 1) {
+			dir_ = d;
 			printfDx("壁発見！新しいdir_:%d\n", dir_);
 			return;
 		}
