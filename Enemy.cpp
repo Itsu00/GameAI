@@ -1,8 +1,5 @@
 #include "Enemy.h"
 #include "time.h"
-#include "Library/ObjectManager.h"
-#include "Stage.h"
-#include "Player.h"
 
 namespace
 {
@@ -12,9 +9,6 @@ namespace
 	const int ENEMY_DRAW_SIZE = 32; //敵の描画サイズ
 	const int animFrame[4]{ 0, 1, 2, 1 };
 	const float ANIM_INTERVAL = 0.2f;
-
-	const float CHASE_RANGE = 5.0f * CHA_SIZE;//追いかけ距離
-	const float CHASE_RANGE_END = 7.0f * CHA_SIZE;  // 追跡終了距離（少し広め）
 }
 
 Enemy::Enemy()
@@ -25,9 +19,7 @@ Enemy::Enemy()
 	dir_ = INIT_ENEMY_DIR;
 }
 
-Enemy::~Enemy()
-{
-}
+Enemy::~Enemy(){}
 
 void Enemy::Update()
 {
