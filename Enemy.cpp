@@ -66,9 +66,6 @@ void Enemy::Update()
 		}
 		prog_timer = 0.5f + prog_timer;
 	}
-
-	if (state_ != nullptr) { state_->Update(*this); }
-	ApplyStateChange();
 }
 
 void Enemy::Draw()
@@ -92,50 +89,4 @@ void Enemy::Draw()
 		animTimer = ANIM_INTERVAL + animTimer;
 	}
 	animTimer = animTimer - Time::DeltaTime();
-}
-
-void Enemy::ChangeState(EnemyStateBase* nextState)
-{
-	delete nextState_;
-	nextState_ = nextState;
-}
-
-void Enemy::ApplyStateChange()
-{
-	if (nextState_ == nullptr) { return; }
-
-	delete state_;
-	state_ = nextState_;
-	nextState_ = nullptr;
-}
-
-bool Enemy::CheckCanSeePlayer()
-{
-	return false;
-}
-
-bool Enemy::CheckAttackRange()
-{
-	return false;
-}
-
-bool Enemy::CheckSearchTimerOver()
-{
-	return false;
-}
-
-void Enemy::Patrol()
-{
-}
-
-void Enemy::Chase()
-{
-}
-
-void Enemy::Attack()
-{
-}
-
-void Enemy::Search()
-{
 }
