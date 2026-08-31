@@ -19,7 +19,6 @@ void TitleScene::Update()
 	}
 }
 
-
 void TitleScene::Draw()
 {
 	DrawString(0, 0, "TITLE SCENE", GetColor(255,255,255));
