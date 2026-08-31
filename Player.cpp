@@ -20,9 +20,7 @@ Player::Player()
 	dir_ = PLAYER_INIT_DIR;
 }
 
-Player::~Player()
-{
-}
+Player::~Player(){}
 
 void Player::Update()
 {

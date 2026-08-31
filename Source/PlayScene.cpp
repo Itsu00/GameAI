@@ -11,9 +11,7 @@ PlayScene::PlayScene()
 	new Enemy();
 }
 
-PlayScene::~PlayScene()
-{
-}
+PlayScene::~PlayScene(){}
 
 void PlayScene::Update()
 {

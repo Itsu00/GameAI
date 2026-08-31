@@ -16,6 +16,7 @@ class Enemy :
 	int hImage_;//‰æ‘œID
 	Point pos_;//ˆÊ’u
 	DIR dir_;//ˆÚ“®•ûŒü
+
 public:
 	Enemy();
 	~Enemy();
